@@ -1,0 +1,10 @@
+## Mandatory
+langchain
+langgraph
+
+## LLMs
+langchain_huggingface
+langchain_perplexity
+
+# Environment variables
+dotenv
