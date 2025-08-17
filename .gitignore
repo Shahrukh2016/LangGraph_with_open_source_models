@@ -1,4 +1,5 @@
 # Exclude virtual environments and environment files
+myvenv/
 venv/
 .env
 
