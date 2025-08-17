@@ -1,0 +1,22 @@
+# Exclude virtual environments and environment files
+venv/
+.env
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# OS and IDE files
+.DS_Store
+.vscode/
+.ipynb_checkpoints/
+
+# Logs and DB
+*.log
+*.sqlite3
+
+# Exclude streamlit file
+.streamlit
+chat_logs.csv

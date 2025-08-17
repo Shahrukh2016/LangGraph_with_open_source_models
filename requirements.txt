@@ -7,4 +7,5 @@ langchain_huggingface
 langchain_perplexity
 
 # Environment variables
-dotenv
+python-dotenv
+
