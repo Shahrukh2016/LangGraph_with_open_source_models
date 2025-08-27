@@ -3,6 +3,7 @@ from langgraph_backend import chatbot
 from langchain_core.messages import HumanMessage
 
 CONFIG = {'configurable': {'thread_id': 'thread-1'}}
+st.title("💬 Chat Me Now! - AI Assistant")
 
 # message_history = []               ## We cant use the normal empty list to print the conversation history, as it reinitiates everytime when the code updates.
 
