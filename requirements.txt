@@ -1,7 +1,6 @@
 ## Mandatory
 langchain
 langgraph
-langgraph_backend
 
 ## LLMs
 langchain_huggingface
@@ -13,3 +12,5 @@ python-dotenv
 ## UI
 streamlit
 
+## Database Integration
+langgraph-checkpoint-sqlite
