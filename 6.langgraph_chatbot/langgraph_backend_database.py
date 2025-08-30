@@ -3,10 +3,11 @@ from typing import TypedDict, Annotated
 from langchain_core.messages import BaseMessage, HumanMessage, AIMessage
 from langchain_huggingface import HuggingFaceEndpoint, ChatHuggingFace
 from langchain_perplexity import ChatPerplexity
-# from langgraph.checkpoint.memory import InMemorySaver
+from langgraph.checkpoint.sqlite import SqliteSaver
 from langgraph.graph.message import add_messages
 from dotenv import load_dotenv
 import os
+import sqlite3
 
 load_dotenv()
 
@@ -21,8 +22,11 @@ def chat_node(state: ChatState):
     response = model.invoke(messages)
     return {"messages": [response]}
 
+## Initiating SQL DB
+conn = sqlite3.connect(database= 'chatbot.db', check_same_thread= False)
+
 # Checkpointer
-checkpointer = InMemorySaver()
+checkpointer = SqliteSaver(conn= conn)
 
 graph = StateGraph(ChatState)
 graph.add_node("chat_node", chat_node)
@@ -30,3 +34,9 @@ graph.add_edge(START, "chat_node")
 graph.add_edge("chat_node", END)
 
 chatbot = graph.compile(checkpointer=checkpointer)
+
+def retrieve_all_threads():
+    all_threads = set()
+    for check in checkpointer.list(None):
+        all_threads.add(check.config['configurable']['thread_id'])
+        return list(all_threads)
