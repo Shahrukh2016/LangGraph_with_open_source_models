@@ -1,5 +1,5 @@
 import streamlit as st
-from langgraph_backend_database import chatbot, retrieve_all_threads
+from langgraph_backend_database import chatbot, checkpointer
 from langchain_core.messages import HumanMessage, AIMessage
 import uuid
 
@@ -26,12 +26,18 @@ def load_conversation(thread_id):
     # Check if messages key exists in state values, return empty list if not
     return state.values.get('messages', [])
 
+def retrieve_all_threads():
+    all_threads = set()
+    for check in checkpointer.list(None):
+        all_threads.add(check.config['configurable']['thread_id'])
+    return list(all_threads)
 
 ## ---------------------------------------------------------------------- SESSION SETUP ------------------------------------------------------------------------------------------------------------------
 # message_history = []               ## We cant use the normal empty list to print the conversation history, as it reinitiates everytime when the code updates.
 
 ## We can use streamlit session state that stores the conversational historyif 'message_history' not in st.session_state:
-st.session_state['message_history'] = []
+if 'message_history' not in st.session_state:
+    st.session_state['message_history'] = []
 
 if 'thread_id' not in st.session_state:
     st.session_state['thread_id'] = generate_thread_id()
@@ -45,10 +51,11 @@ add_thread(st.session_state['thread_id'])
 
 st.sidebar.title('LangGraph Chatbot')
 
+
 if st.sidebar.button('New Chat'):
     reset_chat()
 
-st.sidebar.header('My Conversations')
+st.sidebar.header('Past Conversations')
 
 for thread_id in st.session_state['chat_threads'][::-1]:
     if st.sidebar.button(str(thread_id)):
@@ -66,7 +73,6 @@ for thread_id in st.session_state['chat_threads'][::-1]:
 
         st.session_state['message_history'] = temp_messages
 
-
 ## ---------------------------------------------------------------------- MAIN UI ------------------------------------------------------------------------------------------------------------------
 
 # loading the conversation history
@@ -83,20 +89,25 @@ if user_input:
     with st.chat_message('user'):
         st.text(user_input)
 
-    CONFIG = {'configurable': {'thread_id': st.session_state['thread_id']}}
+    #CONFIG = {'configurable': {'thread_id': st.session_state['thread_id']}}
 
-     # first add the message to message_history
-    with st.chat_message("assistant"):
-        def ai_only_stream():
-            for message_chunk, metadata in chatbot.stream(
-                {"messages": [HumanMessage(content=user_input)]},
-                config=CONFIG,
-                stream_mode="messages"
-            ):
-                if isinstance(message_chunk, AIMessage):
-                    # yield only assistant tokens
-                    yield message_chunk.content
+    CONFIG = {
+        "configurable": {"thread_id": st.session_state["thread_id"]},
+        "metadata": {
+            "thread_id": st.session_state["thread_id"]
+        },
+        "run_name": "chat_turn",
+    }
 
-        ai_message = st.write_stream(ai_only_stream())
+    # first add the message to message_history
+    with st.chat_message('assistant'):
+
+        ai_message = st.write_stream(
+            message_chunk.content for message_chunk, metadata in chatbot.stream(
+                {'messages': [HumanMessage(content=user_input)]},
+                config= CONFIG,
+                stream_mode= 'messages'
+            )
+        )
 
     st.session_state['message_history'].append({'role': 'assistant', 'content': ai_message})

@@ -14,3 +14,9 @@ streamlit
 
 ## Database Integration
 langgraph-checkpoint-sqlite
+
+## langchain depandancies
+langchain_community
+
+## Tools
+ddgs
